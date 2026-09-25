@@ -24,7 +24,7 @@ except Exception:  # pragma: no cover
 
 
 PLUGIN_NAME = "astrbot_plugin_llm_audit"
-PLUGIN_VERSION = "1.2.0"
+PLUGIN_VERSION = "1.1.0"
 
 DEFAULT_AUDIT_PROMPT = """你是聊天内容安全审核器。
 
@@ -104,7 +104,6 @@ class LlmAuditPlugin(Star):
         self.state: dict[str, Any] = {}
         self.state_file: Path | None = None
         self.audit_log_file: Path | None = None
-        self.web_keyword_file: Path | None = None
         self.keyword_rules: list[KeywordRule] = []
         self.keyword_load_error_count = 0
         self._initialized = False
@@ -145,8 +144,6 @@ class LlmAuditPlugin(Star):
             ("dashboard", self._web_dashboard, ["GET"], "审核风险和封禁账号"),
             ("settings", self._web_settings, ["GET"], "读取审核插件配置"),
             ("settings/save", self._web_save_settings, ["POST"], "保存审核插件配置"),
-            ("keywords", self._web_keywords, ["GET"], "读取内置风险词库"),
-            ("keywords/save", self._web_save_keywords, ["POST"], "保存内置风险词库"),
             ("unban", self._web_unban, ["POST"], "解除审核封禁"),
         )
         for suffix, handler, methods, description in routes:
@@ -291,62 +288,6 @@ class LlmAuditPlugin(Star):
         if changed_keywords:
             self._load_keywords()
         return json_response({"saved": True, "message": "配置已保存。"})
-
-    def _web_keyword_source(self) -> Path:
-        if self.web_keyword_file and self.web_keyword_file.exists():
-            return self.web_keyword_file
-        return self._keyword_file_path()
-
-    async def _web_keywords(self):
-        await self._ensure_runtime()
-        source = self._web_keyword_source()
-        try:
-            content = self._read_text_by_encoding(source)
-        except Exception as exc:
-            logger.warning("%s keyword editor read failed: %s", PLUGIN_NAME, exc)
-            return error_response("风险词库读取失败。", status_code=500)
-        return json_response({
-            "content": content,
-            "source": "网页修改" if source == self.web_keyword_file else "插件内置文件",
-            "rule_count": len(self.keyword_rules),
-            "error_count": self.keyword_load_error_count,
-        })
-
-    async def _web_save_keywords(self):
-        await self._ensure_runtime()
-        payload = await request.json(default={})
-        content = payload.get("content") if isinstance(payload, dict) else None
-        if not isinstance(content, str):
-            return error_response("风险词库内容必须是文本。", status_code=400)
-        if len(content) > 200000 or len(content.splitlines()) > 5000:
-            return error_response("风险词库超过 20 万字符或 5000 行限制。", status_code=400)
-        for number, raw in enumerate(content.splitlines(), 1):
-            line = raw.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "|" in line:
-                parts = [part.strip() for part in line.split("|")]
-                if len(parts) < 3 or not parts[0] or not parts[2]:
-                    return error_response(f"第 {number} 行格式应为：关键词 | 分数 | 分类 | 备注。", status_code=400)
-                if not parts[1].isdigit() or int(parts[1]) < 1:
-                    return error_response(f"第 {number} 行的分数必须是正整数。", status_code=400)
-        if not self.web_keyword_file:
-            return error_response("风险词库目录尚未初始化。", status_code=500)
-        try:
-            self.web_keyword_file.parent.mkdir(parents=True, exist_ok=True)
-            temporary = self.web_keyword_file.with_suffix(".tmp")
-            temporary.write_text(content, encoding="utf-8")
-            temporary.replace(self.web_keyword_file)
-            self._load_keywords()
-        except Exception as exc:
-            logger.warning("%s keyword editor save failed: %s", PLUGIN_NAME, exc)
-            return error_response("风险词库保存失败。", status_code=500)
-        return json_response({
-            "saved": True,
-            "rule_count": len(self.keyword_rules),
-            "error_count": self.keyword_load_error_count,
-            "message": "风险词库已保存并生效。",
-        })
 
     async def _web_unban(self):
         await self._ensure_runtime()
@@ -806,7 +747,6 @@ class LlmAuditPlugin(Star):
         data_dir.mkdir(parents=True, exist_ok=True)
         self.state_file = data_dir / "state.json"
         self.audit_log_file = data_dir / "audit_logs.json"
-        self.web_keyword_file = data_dir / "keywords.txt"
 
     def _load_state(self):
         self.state = {
@@ -909,7 +849,7 @@ class LlmAuditPlugin(Star):
         return keyword_path
 
     def _load_keywords(self):
-        keyword_path = self._web_keyword_source()
+        keyword_path = self._keyword_file_path()
 
         self.keyword_rules = []
         self.keyword_load_error_count = 0

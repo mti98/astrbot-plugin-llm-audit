@@ -1,7 +1,7 @@
 name: astrbot_plugin_llm_audit
 display_name: LLM 内容审核插件
 desc: 基于关键词风险积分和 LLM 二次审核的 AstrBot 内容审核插件，提供风险账号面板和配置管理。
-version: "1.2.0"
+version: "1.1.0"
 author: user
 repo: "https://github.com/mti98/astrbot-plugin-llm-audit"
 astrbot_version: ">=4.26.0"
