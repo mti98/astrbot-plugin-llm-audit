@@ -23,6 +23,7 @@
     <nav class="tabs" aria-label="管理页面">
       <button class="tab active" data-tab="dashboard" type="button">账号面板</button>
       <button class="tab" data-tab="settings" type="button">审核配置</button>
+      <button class="tab" data-tab="keywords" type="button">内置风险词库</button>
     </nav>
 
     <section id="dashboard" class="tab-panel">
@@ -52,7 +53,18 @@
         <div class="form-actions"><span id="settings-status" class="muted"></span><button id="save-settings" class="button primary" type="submit" form="settings-form">保存配置</button></div>
       </section>
     </section>
-    <footer>插件版本 1.1.0</footer>
+    <section id="keywords" class="tab-panel" hidden>
+      <section class="card">
+        <div class="section-heading"><div><h2>内置风险词库</h2><p>每行填写「关键词 | 分数 | 分类 | 备注」。可直接修改、增加或删除词条；以 # 开头的行为注释。</p></div></div>
+        <p id="keywords-info" class="muted" role="status">正在读取词库…</p>
+        <form id="keywords-form">
+          <label class="editor-label" for="keywords-content">风险词库内容</label>
+          <textarea id="keywords-content" class="keyword-editor" spellcheck="false" aria-describedby="keywords-info"></textarea>
+          <div class="form-actions"><span id="keywords-status" class="muted" role="status"></span><button id="save-keywords" class="button primary" type="submit">保存词库</button></div>
+        </form>
+      </section>
+    </section>
+    <footer>插件版本 1.2.0</footer>
   </main>
   <script type="module" src="./app.js"></script>
 </body>

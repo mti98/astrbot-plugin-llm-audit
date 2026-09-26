@@ -76,6 +76,9 @@ th:last-child { border-radius: 0 8px 8px 0; }
 .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
 .field textarea { min-height: 100px; resize: vertical; line-height: 1.5; }
 .field textarea.prompt { min-height: 230px; }
+.editor-label { display: block; margin: 0 0 9px; font-size: 13px; font-weight: 700; }
+.keyword-editor { display: block; width: 100%; min-height: 440px; padding: 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: 13px/1.65 Consolas, "Microsoft YaHei", monospace; resize: vertical; outline: none; }
+.keyword-editor:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
 .check-row { display: flex !important; align-items: center; gap: 9px; min-height: 42px; cursor: pointer; }
 .check-row input { width: 17px; height: 17px; accent-color: var(--accent); }
 .form-actions { display: flex; justify-content: flex-end; align-items: center; gap: 14px; margin-top: 22px; }

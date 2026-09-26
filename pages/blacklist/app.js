@@ -169,6 +169,36 @@ async function loadSettings() {
   $("#settings-status").textContent = "";
 }
 
+function showKeywordInfo(result) {
+  const warnings = result.error_count ? `，格式错误 ${result.error_count} 行` : "";
+  $("#keywords-info").textContent = `${result.source || "当前词库"} · 当前生效 ${result.rule_count ?? 0} 条${warnings}。网页保存的词库会保留在 AstrBot 插件数据目录中。`;
+}
+
+async function loadKeywords() {
+  const result = await bridge.apiGet("keywords");
+  $("#keywords-content").value = result.content ?? "";
+  $("#keywords-status").textContent = "";
+  showKeywordInfo(result);
+}
+
+async function saveKeywords(event) {
+  event.preventDefault();
+  const button = $("#save-keywords");
+  button.disabled = true;
+  $("#keywords-status").textContent = "正在保存…";
+  try {
+    const result = await bridge.apiPost("keywords/save", { content: $("#keywords-content").value });
+    $("#keywords-status").textContent = result.message || "风险词库已保存。";
+    showKeywordInfo({ ...result, source: "网页修改" });
+    showNotice("风险词库已保存并立即生效。");
+  } catch (error) {
+    $("#keywords-status").textContent = "保存失败";
+    showNotice(error.message || "风险词库保存失败。", true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function saveSettings(event) {
   event.preventDefault();
   const button = $("#save-settings");
@@ -198,7 +228,7 @@ async function saveSettings(event) {
 async function refresh() {
   showNotice("");
   try {
-    await Promise.all([loadDashboard(), loadSettings()]);
+    await Promise.all([loadDashboard(), loadSettings(), loadKeywords()]);
   } catch (error) {
     showNotice(error.message || "读取插件数据失败，请确认 AstrBot 插件页 API 可用。", true);
   }
@@ -208,6 +238,7 @@ await bridge.ready();
 document.title = bridge.t("pages.blacklist.title", "LLM 内容审核插件");
 $("#refresh").addEventListener("click", refresh);
 $("#settings-form").addEventListener("submit", saveSettings);
+$("#keywords-form").addEventListener("submit", saveKeywords);
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("active", item === tab));
