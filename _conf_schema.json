@@ -1,0 +1,152 @@
+{
+  "enabled": {
+    "type": "bool",
+    "description": "是否启用内容审核插件",
+    "default": true
+  },
+  "audit_scope": {
+    "type": "string",
+    "description": "审核消息范围",
+    "hint": "private 只审核私聊；all 审核私聊和群聊。",
+    "default": "private",
+    "options": ["private", "all"],
+    "labels": ["仅审核私聊", "审核私聊和群聊"]
+  },
+  "audit_ai_messages": {
+    "type": "bool",
+    "description": "是否审核 AI/机器人消息",
+    "default": true
+  },
+  "audit_provider_id": {
+    "type": "string",
+    "description": "选择用于二次审核的 AstrBot LLM Provider",
+    "hint": "必须选择已经在 AstrBot 中配置好的模型提供商；未配置时插件只累计风险分并输出 warning 日志。",
+    "default": "",
+    "_special": "select_provider"
+  },
+  "score_threshold": {
+    "type": "int",
+    "description": "用户累计风险分达到该值后触发 LLM 审核",
+    "default": 12
+  },
+  "keyword_score": {
+    "type": "int",
+    "description": "兼容旧格式关键词时使用的默认分数",
+    "default": 2
+  },
+  "custom_keywords": {
+    "type": "text",
+    "description": "自定义触发词，每行一条：关键词 | 分数 | 分类 | 备注",
+    "hint": "在插件配置页直接添加关键词。保存配置后重载插件或使用 /audit_reload_keywords 即可生效；会与 keywords.txt 合并读取。",
+    "default": ""
+  },
+  "score_reset_hours": {
+    "type": "int",
+    "description": "风险分自动清零的小时数",
+    "default": 24
+  },
+  "max_score_per_message": {
+    "type": "int",
+    "description": "单条消息最多累计多少风险分",
+    "default": 6
+  },
+  "review_cooldown_minutes": {
+    "type": "int",
+    "description": "同一用户 LLM 审核后的冷却分钟数",
+    "default": 10
+  },
+  "llm_user_history_count": {
+    "type": "int",
+    "description": "发送给 LLM 的该用户历史消息数量",
+    "default": 30
+  },
+  "llm_group_context_count": {
+    "type": "int",
+    "description": "发送给 LLM 的群聊上下文数量",
+    "default": 30
+  },
+  "ban_scope": {
+    "type": "string",
+    "description": "封禁范围",
+    "default": "group",
+    "options": ["group", "global"],
+    "labels": ["仅当前群", "全局"]
+  },
+  "ban_base_hours": {
+    "type": "int",
+    "description": "首次临时封禁小时数",
+    "default": 6
+  },
+  "ban_multiplier": {
+    "type": "float",
+    "description": "重复违规封禁时长倍率",
+    "default": 2.0
+  },
+  "ban_max_hours": {
+    "type": "int",
+    "description": "临时封禁最长小时数",
+    "default": 168
+  },
+  "permanent_ban_after": {
+    "type": "int",
+    "description": "累计封禁次数达到该数值后永久拉黑，0 表示关闭永久拉黑",
+    "default": 0
+  },
+  "ignore_admins": {
+    "type": "bool",
+    "description": "是否跳过管理员审核",
+    "default": true
+  },
+  "audit_prompt": {
+    "type": "text",
+    "description": "LLM 审核提示词",
+    "default": "你是聊天内容安全审核器。\n\n请根据以下内容判断用户消息是否存在明显违规风险。\n\n重点检查：\n1. 色情、性交易、未成年人性内容\n2. 暴力威胁、恐怖威胁、明确伤害他人\n3. 严重辱骂、人身攻击、歧视仇恨\n4. 违法交易、诈骗、毒品、违禁品\n5. [用户触发屏蔽词]、自杀鼓励或教唆\n\n注意：\n- 普通讨论、新闻讨论、游戏讨论、引用他人内容、无明显恶意的玩笑，不应轻易判违规。\n- 只有存在明确违规意图或明显风险时才判定 violation 为 true。\n- 如果上下文不足，请倾向 violation 为 false。\n\n你只能输出以下 JSON：\n\n{\n  \"violation\": true,\n  \"categories\": [\"sexual\", \"violence\", \"abuse\", \"illegal\", \"self_harm\"],\n  \"reason\": \"简短中文原因\",\n  \"confidence\": 0\n}\n\n字段规则：\n- violation：true 或 false\n- categories：风险分类数组，没有风险则 []\n- reason：简短中文说明\n- confidence：0 到 100 的整数\n\n不要输出 Markdown，不要输出代码块，不要输出额外解释。"
+  },
+  "blocked_notice": {
+    "type": "text",
+    "description": "被限制用户触发机器人时返回的提示",
+    "default": "你因发布违规内容已被限制使用机器人。"
+  },
+  "keyword_path": {
+    "type": "string",
+    "description": "关键词文件路径",
+    "default": "keywords.txt",
+    "invisible": true
+  },
+  "min_keyword_length": {
+    "type": "int",
+    "description": "最短关键词长度",
+    "default": 1,
+    "invisible": true
+  },
+  "max_risk_score": {
+    "type": "int",
+    "description": "单个计分记录的风险分上限",
+    "default": 30,
+    "invisible": true
+  },
+  "safe_score_after_review": {
+    "type": "int",
+    "description": "LLM 未确认违规后降到的风险分",
+    "default": 3,
+    "invisible": true
+  },
+  "post_unban_score": {
+    "type": "int",
+    "description": "解封后保留的风险分",
+    "default": 4,
+    "invisible": true
+  },
+  "notify_interval_minutes": {
+    "type": "int",
+    "description": "黑名单提示发送间隔",
+    "default": 10,
+    "invisible": true
+  },
+  "blacklisted_users": {
+    "type": "list",
+    "description": "内部黑名单记录",
+    "default": [],
+    "invisible": true
+  }
+}
