@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>风险与封禁管理</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">ASTRBOT · LLM 内容审核插件</p>
+        <h1>风险与封禁管理</h1>
+        <p class="subhead">查看账号风险积分、管理封禁，并调整审核配置。</p>
+      </div>
+      <button id="refresh" class="button secondary" type="button">刷新数据</button>
+    </header>
+
+    <div id="notice" class="notice" role="status" hidden></div>
+
+    <nav class="tabs" aria-label="管理页面">
+      <button class="tab active" data-tab="dashboard" type="button">账号面板</button>
+      <button class="tab" data-tab="settings" type="button">审核配置</button>
+    </nav>
+
+    <section id="dashboard" class="tab-panel">
+      <div class="stats">
+        <article class="stat-card"><span>有风险积分的账号</span><strong id="score-count">—</strong></article>
+        <article class="stat-card"><span>封禁账号</span><strong id="blocked-count">—</strong></article>
+        <article class="stat-card"><span>数据更新时间</span><strong id="updated-at" class="small-value">—</strong></article>
+      </div>
+
+      <section class="card">
+        <div class="section-heading"><div><h2>风险积分账号</h2><p>显示当前仍有积分的账号及最近命中。</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>账号</th><th>平台 / 群</th><th>积分</th><th>最近命中</th><th>积分清零时间</th></tr></thead><tbody id="scores-body"></tbody></table></div>
+        <p id="scores-empty" class="empty" hidden>目前没有风险积分账号。</p>
+      </section>
+
+      <section class="card">
+        <div class="section-heading"><div><h2>封禁账号</h2><p>可在此解除全局、群内或私聊范围的封禁。</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>账号</th><th>封禁范围</th><th>原因</th><th>封禁次数</th><th>状态</th><th></th></tr></thead><tbody id="blocked-body"></tbody></table></div>
+        <p id="blocked-empty" class="empty" hidden>目前没有封禁账号。</p>
+      </section>
+    </section>
+
+    <section id="settings" class="tab-panel" hidden>
+      <section class="card">
+        <div class="section-heading"><div><h2>审核配置</h2><p>修改后保存即生效；自定义关键词会立即重新加载。</p></div></div>
+        <form id="settings-form" class="settings-grid"></form>
+        <div class="form-actions"><span id="settings-status" class="muted"></span><button id="save-settings" class="button primary" type="submit" form="settings-form">保存配置</button></div>
+      </section>
+    </section>
+    <footer>插件版本 1.1.0</footer>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
